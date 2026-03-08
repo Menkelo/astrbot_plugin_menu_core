@@ -1,11 +1,17 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark"> <head>
+<html lang="zh-CN" data-theme="dark"> 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AstrBot Menu Studio</title>
+    <title>Menu Core Studio</title>
+
+    <!-- ✅ 字体改为 Inter + Noto Sans SC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        /* === 变量定义 === */
         :root { 
             --bg-body: #000000; --bg-sidebar: #1c1c1e; --text-main: #ffffff; --text-sub: #8e8e93; --border: #38383a;
             --glass-bg: rgba(255, 255, 255, 0.08); --glass-border: rgba(255, 255, 255, 0.12);
@@ -20,9 +26,17 @@
         
         * { box-sizing: border-box; outline: none; }
         ::-webkit-scrollbar { display: none; }
-        body { margin: 0; padding: 0; font-family: -apple-system, "Microsoft YaHei", sans-serif; background: var(--bg-body); color: var(--text-main); height: 100vh; overflow: hidden; transition: background 0.3s, color 0.3s; }
+
+        body { 
+            margin: 0; padding: 0; 
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, "Microsoft YaHei", sans-serif; 
+            background: var(--bg-body); color: var(--text-main); 
+            height: 100vh; overflow: hidden; 
+            transition: background 0.3s, color 0.3s; 
+        }
+
         .app { display: flex; height: 100vh; width: 100vw; }
-        
+
         .sidebar { width: 420px; background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 20; transition: background 0.3s, border 0.3s; }
         .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; }
         .header-top { display: flex; justify-content: space-between; align-items: center; }
@@ -31,24 +45,53 @@
         .theme-toggle:hover { background: rgba(128,128,128,0.1); }
         .action-row { display: flex; gap: 10px; }
         .sidebar-content { flex: 1; overflow-y: auto; padding: 20px; }
-        
+
         .control-group { background: transparent; border: none; padding: 0; margin-bottom: 25px; display: flex; flex-direction: column; gap: 12px; }
         .form-row { margin-bottom: 0; display: flex; align-items: center; justify-content: space-between; color: var(--text-main); background: var(--glass-bg); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 0 16px; height: 54px; transition: 0.2s; }
         .form-row:hover { border-color: var(--accent); background: rgba(128,128,128,0.1); }
         label { color: var(--text-main); font-size: 0.95rem; font-weight: 600; white-space: nowrap; margin-right: 10px;}
         input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer;}
-        
+
         .align-group { display: flex; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 2px; gap: 2px; height: 32px; width: 140px;}
         .align-btn { flex: 1; border: none; background: transparent; color: var(--text-sub); border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; }
         .align-btn.active { background: var(--accent); color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        
+
         .outline-group { background: var(--glass-bg); border-radius: var(--radius-m); overflow: hidden; border: 1px solid var(--border); margin-bottom: 10px; }
-        .outline-header { height: 54px; padding: 0 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); cursor: grab; }
+        .outline-header { height: 54px; padding: 0 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
         .outline-header .deco-bar { width: 4px; height: 16px; border-radius: 2px; margin: 0 8px; flex-shrink: 0; }
-        
-        .delete-wrapper { height: 32px; display: flex; align-items: center; margin-left: auto; }
-        .confirm-actions { height: 32px; display: flex; align-items: center; gap: 2px; background: var(--glass-bg); border-radius: 8px; padding: 0 4px 0 12px; border: 1px solid var(--border); animation: slideLeft 0.2s cubic-bezier(0.2, 0, 0, 1); box-sizing: border-box; overflow: hidden; }
-        @keyframes slideLeft { from { opacity: 0; width: 32px; } to { opacity: 1; width: 110px; } }
+
+        .outline-body { padding: 10px; display: flex; flex-direction: column; gap: 10px; max-height: 2000px; opacity: 1; transition: all .25s ease; overflow: hidden; }
+        .outline-body.collapsed { max-height: 0; opacity: 0; pointer-events: none; padding-top: 0; padding-bottom: 0; margin: 0; }
+
+        .outline-item { display: flex; flex-direction: column; gap: 6px; padding: 6px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.02); }
+        .outline-item-row { display: flex; gap: 6px; align-items: center; }
+        .outline-input {
+            flex: 1;
+            background: var(--glass-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 12px;
+            color: var(--text-main);
+        }
+        .outline-input::placeholder { color: var(--text-sub); }
+        .btn-icon.small { width: 22px; height: 22px; }
+
+        .delete-wrapper { height: 32px; display: flex; align-items: center; margin-left: auto; gap: 6px; }
+        .confirm-actions { height: 32px; display: flex; align-items: center; gap: 4px; padding: 0 6px; border: 1px solid var(--border); border-radius: 8px; background: var(--glass-bg); overflow: hidden; animation: confirmPop 0.2s cubic-bezier(0.2, 0, 0, 1); transform-origin: right center; }
+        @keyframes confirmPop { from { opacity: 0; transform: scaleX(0.2); } to { opacity: 1; transform: scaleX(1); } }
+
+        .collapse-toggle {
+            font-size: 12px;
+            color: var(--text-sub);
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 6px;
+            transition: 0.2s;
+            user-select: none;
+        }
+        .collapse-toggle:hover { background: rgba(128,128,128,0.1); color: var(--text-main); }
+
         .btn-icon { width: 28px; height: 28px; border-radius: 8px; background: transparent; border: none; color: var(--text-sub); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.2s; }
         .btn-icon:hover { background: rgba(128,128,128,0.1); color: var(--text-main); transform: scale(1.1); }
         .btn-yes { color: var(--success) !important; }
@@ -56,12 +99,9 @@
         .btn-no { color: var(--danger) !important; }
         .btn-no:hover { background: rgba(255, 69, 58, 0.2) !important; }
 
-        .outline-item { padding: 8px 10px 8px 30px; display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem; color: var(--text-main); border-top: 1px solid transparent; }
-        
         .main-area { flex: 1; background: var(--bg-body); display: flex; justify-content: center; position: relative; transition: background 0.3s; }
         .viewport { flex: 1; overflow: auto; padding: 60px; display: flex; justify-content: center; align-items: flex-start; background-color: var(--preview-bg); background-image: radial-gradient(var(--border) 1px, transparent 1px); background-size: 20px 20px; transition: background-color 0.3s; }
-        
-        /* === 画布基础样式 === */
+
         .canvas-list { 
             width: 800px; min-height: 800px; 
             background: var(--preview-bg); 
@@ -73,35 +113,61 @@
             margin-bottom: 100px;
             box-sizing: border-box;
             padding: 50px 0;
+            user-select: none;
+        }
+        .canvas-list input { user-select: text; }
+
+        .group-header { cursor: grab; }
+        .menu-card { cursor: grab; }
+
+        .group-container,
+        .menu-card { position: relative; }
+
+        .group-container.drag-over,
+        .menu-card.drag-over {
+            outline: 2px dashed var(--accent);
+            background: rgba(10,132,255,0.08);
+            animation: pulse 1s infinite;
+        }
+        .group-container.dragging,
+        .menu-card.dragging {
+            opacity: 0.5;
+            transform: scale(0.98);
         }
 
-        .canvas-grid { 
-            width: 800px; min-height: 800px; 
-            background: var(--preview-bg); 
-            border: 1px solid var(--border); 
-            border-radius: 20px; 
-            box-shadow: 0 0 100px rgba(0,0,0,0.1); 
-            transform-origin: top center; 
-            transition: transform 0.2s; 
-            margin-bottom: 100px;
-            box-sizing: border-box;
-            padding: 50px 30px; /* 自由网格内边距 */
+        .drop-before::before, .drop-after::after {
+            content: '';
+            position: absolute;
+            left: 0; right: 0;
+            height: 3px;
+            background: var(--accent);
+            animation: pulse 1s infinite;
         }
-        
+        .drop-before::before { top: -6px; }
+        .drop-after::after { bottom: -6px; }
+
+        @keyframes pulse { 0%{opacity:.3} 50%{opacity:1} 100%{opacity:.3} }
+
         .header-area { padding: 0 30px; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
-        .divider { height: 1px; background: var(--border); margin: 0 30px 40px 30px; }
+        .header-block { display:flex; flex-direction:column; gap:6px; transform: translateY(-4px); }
+
+        .divider, .footer-divider { height: 1px; background: var(--border); }
+        .divider { margin: 0 30px 40px 30px; }
+
         .group-container { margin: 0 30px 30px 30px; padding: 25px; background: var(--preview-group); border-radius: 18px; border: 1px solid var(--group-border); }
         .group-header { display: flex; align-items: center; margin-bottom: 20px; }
         .group-deco { width: 6px; height: 30px; margin-right: 15px; border-radius: 3px; }
-        
+
         input.editable { background: transparent; border: 1px solid transparent; width: 100%; padding: 0 !important; margin: 0 !important; transition: 0.2s; border-radius: 4px; font-family: inherit; line-height: 1.4; }
         input.editable:hover { border: 1px dashed var(--border); }
-        .text-main { font-size: 48px; font-weight: 800; color: var(--text-main) !important; margin-bottom: 10px; display: block; }
-        .text-sub { font-size: 24px; color: var(--text-sub) !important; margin-bottom: 30px; display: block; }
+
+        .text-main { font-size: 48px; font-weight: 800; color: var(--text-main) !important; margin: 0; line-height: 1.1; }
+        .text-sub { font-size: 24px; color: var(--text-sub) !important; margin: 0; line-height: 1.1; }
+
         .text-group { font-size: 28px; color: var(--text-main) !important; font-weight: 600; flex: 1; padding: 0 !important;}
-        
+
         .menu-grid { display: grid; gap: 15px; }
-        .menu-card { height: 80px; position: relative; cursor: move; border-radius: 12px; background: var(--glass-bg); border: 1px solid var(--glass-border); display: flex; overflow: hidden; transition: 0.2s; }
+        .menu-card { height: 80px; position: relative; border-radius: 12px; background: var(--glass-bg); border: 1px solid var(--glass-border); display: flex; overflow: hidden; transition: 0.2s; }
         .menu-card:hover { transform: scale(1.02); border-color: var(--accent); z-index: 10; }
         .card-content { flex: 1; padding: 0 20px; display: flex; flex-direction: column; justify-content: center; }
         .text-item-title { font-size: 18px; color: var(--text-main) !important; margin-bottom: 4px; font-weight: 600; }
@@ -111,360 +177,337 @@
         .btn-primary { background: var(--accent); color: white; width: 100%; }
         .btn-success { background: var(--success); color: white; width: 100%; }
         .btn-ghost { background: transparent; color: var(--text-sub); }
-        
+
         .modal-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; display: flex; justify-content: center; align-items: center; }
         .preview-image { max-width: 90%; max-height: 90vh; border-radius: 12px; box-shadow: 0 20px 80px rgba(0,0,0,0.5); }
-        
+
         .toast { position: absolute; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px); background: #333; color: white; padding: 8px 24px; border-radius: 30px; opacity: 0; transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); pointer-events: none; z-index: 3000; font-size: 1rem; font-weight: bold; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        .mode-switcher { display: flex; background: var(--glass-bg); padding: 4px; border-radius: 10px; border: 1px solid var(--border); margin-top: 15px; } 
-        .mode-btn { flex: 1; background: transparent; border: none; padding: 8px; color: var(--text-sub); border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: 600; }
-        .mode-btn.active-list { background: var(--accent); color: white; box-shadow: 0 2px 8px rgba(10, 132, 255, 0.3); }
-        .mode-btn.active-grid { background: var(--success); color: white; box-shadow: 0 2px 8px rgba(48, 209, 88, 0.3); }
+        body.render-only { overflow: hidden; background: transparent; }
+        body.render-only .sidebar { display: none; }
+        body.render-only .main-area { flex: 1; }
+        body.render-only .viewport { padding: 0; background: transparent; background-image: none; }
+        body.render-only .canvas-list { border: none !important; box-shadow: none !important; border-radius: 0 !important; margin: 0 !important; }
+        body.render-only .toast,
+        body.render-only .modal-mask { display: none !important; }
 
-        .widget-grid { display: grid; grid-template-columns: repeat(var(--grid-cols, 4), 1fr); gap: 20px; grid-auto-flow: dense; margin-top: 30px; }
-        .group-widget { background: var(--preview-group); border: 1px solid var(--group-border); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; position: relative; transition: all 0.2s; }
-        .group-widget:hover { transform: translateY(-2px); border-color: var(--accent); z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        
-        .resize-controls { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; opacity: 0; transition: 0.2s; background: var(--bg-body); padding: 4px; border-radius: 6px; border: 1px solid var(--border); }
-        .group-widget:hover .resize-controls { opacity: 1; }
-        .btn-mini { padding: 4px 8px; font-size: 12px; background: rgba(128,128,128,0.2); color: var(--text-main); border-radius: 4px; border:none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-mini:hover { background: var(--accent); color: white; }
+        .footer-divider { margin: 16px 30px 6px; }
+        .footer-area { padding: 4px 30px 12px; display: flex; align-items: center; }
+        .footer-area.align-left { justify-content: flex-start; }
+        .footer-area.align-center { justify-content: center; }
+        .footer-area.align-right { justify-content: flex-end; }
 
-        /* 拖拽手柄 */
-        .resize-handle-drag { position: absolute; bottom: 0; right: 0; width: 30px; height: 30px; cursor: nwse-resize; z-index: 100; opacity: 0.3; transition: 0.2s; display: flex; align-items: flex-end; justify-content: flex-end; padding: 5px; }
-        .group-widget:hover .resize-handle-drag { opacity: 1; }
-        .resize-icon { width: 12px; height: 12px; border-right: 3px solid var(--text-sub); border-bottom: 3px solid var(--text-sub); border-bottom-right-radius: 4px; pointer-events: none; }
-        .group-widget.resizing { border-color: var(--success); box-shadow: 0 0 0 2px rgba(48, 209, 88, 0.2); z-index: 100; }
-
-        .gw-header { display: flex; align-items: center; margin-bottom: 15px; gap: 10px; }
-        .gw-deco { width: 4px; height: 20px; border-radius: 2px; flex-shrink: 0;}
-        .menu-pill { background: var(--glass-bg); padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 5px; border: 1px solid transparent; }
-        .menu-pill:hover { border-color: var(--border); }
-        .menu-pill input { font-size: 14px; }
+        .footer-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            padding: 0;
+            font-size: 12px;
+            color: var(--text-sub);
+            background: transparent;
+            border: none;
+        }
     </style>
 </head>
 <body>
-    <div id="app" class="app" @mouseup="handleResizeUp" @mousemove="handleResizeMove">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <div class="header-top">
-                    <span class="header-title">菜单配置</span>
-                    <div class="theme-toggle" @click="toggleTheme">{{ config.design.theme === 'light' ? '🌞 浅色' : '🌙 深色' }}</div>
-                </div>
-                
-                <div class="action-row">
-                    <button class="btn btn-success" @click="fetchBackendPreview">🔍 预览</button>
-                    <button class="btn btn-primary" @click="saveConfig" :disabled="saving">{{ saving ? '...' : '💾 保存' }}</button>
-                </div>
-
-                <div class="mode-switcher">
-                    <button :class="['mode-btn', config.design.layout_mode === 'list' ? 'active-list' : '']" @click="switchMode('list')">经典列表</button>
-                    <button :class="['mode-btn', config.design.layout_mode === 'grid' ? 'active-grid' : '']" @click="switchMode('grid')">自由网格</button>
-                </div>
+<div id="app" class="app">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="header-top">
+                <span class="header-title">菜单配置</span>
+                <div class="theme-toggle" @click="toggleTheme">{{ config.design.theme === 'light' ? '🌞 浅色' : '🌙 深色' }}</div>
             </div>
-            
-            <div class="sidebar-content">
-                <div class="control-group">
-                    <div class="form-row">
-                        <label>画布缩放</label>
-                        <input type="range" v-model.number="zoom" min="0.5" max="1.5" step="0.1">
-                        <span style="width:30px; text-align:right">{{ Math.round(zoom*100) }}%</span>
-                    </div>
-                    
-                    <div class="form-row" v-if="config.design.layout_mode === 'list'">
-                        <label>卡片列数</label>
-                        <input type="range" v-model.number="getDesign().layout_columns" min="1" max="3" step="1">
-                    </div>
-
-                    <div class="form-row" v-if="config.design.layout_mode === 'grid'">
-                        <label>卡片列数</label>
-                        <input type="range" v-model.number="getDesign().grid_columns" min="1" max="3" step="1">
-                    </div>
-
-                    <div class="form-row">
-                        <label>标题对齐</label>
-                        <div class="align-group">
-                            <button class="align-btn" :class="{active: getDesign().title_align === 'left'}" @click="getDesign().title_align = 'left'">左</button>
-                            <button class="align-btn" :class="{active: getDesign().title_align === 'center'}" @click="getDesign().title_align = 'center'">中</button>
-                            <button class="align-btn" :class="{active: getDesign().title_align === 'right'}" @click="getDesign().title_align = 'right'">右</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div v-for="(group, gIdx) in config.groups" :key="gIdx" class="outline-group"
-                     draggable="true" @dragstart="dragStartGroup(gIdx, $event)" @dragover.prevent @drop="dropOnGroupList(gIdx)">
-                    
-                    <div class="outline-header">
-                        <span style="cursor:grab; color:var(--text-sub)">☰</span>
-                        <div class="deco-bar" :style="{background: getGroupColor(gIdx)}"></div>
-                        <input type="text" v-model="group.title" style="flex:1; background:transparent; border:none; font-weight:600; color:var(--text-main)" placeholder="分组名">
-                        
-                        <div class="delete-wrapper">
-                            <button v-if="deleteTargetIdx !== gIdx" class="btn-icon" @click="askDelete(gIdx)" title="删除分组">🗑️</button>
-                            <div v-else class="confirm-actions">
-                                <span style="font-size:12px; color:var(--text-sub); margin-right:2px; white-space:nowrap; line-height: 1;">确认?</span>
-                                <button class="btn-icon btn-yes" @click="removeGroup(gIdx)">✅</button>
-                                <button class="btn-icon btn-no" @click="cancelDelete()">❌</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div v-if="group.enabled !== false" style="padding:10px;">
-                        <div v-for="(item, iIdx) in group.menus" :key="iIdx" style="display:flex; align-items:center; margin-bottom:5px; font-size:13px; color:var(--text-sub);">
-                            <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">- {{ item.name || '未命名' }}</span>
-                            <span class="btn-icon" style="width:20px; height:20px;" @click="removeItem(gIdx, iIdx)">×</span>
-                        </div>
-                        <button class="btn" style="font-size:0.8rem; width:100%; background: rgba(0,0,0,0.1); border: 1px dashed var(--border); color: var(--text-sub); height:30px; min-height:0; padding:0;" @click="addItem(gIdx)">+ 添加功能</button>
-                    </div>
-                </div>
-                <button class="btn btn-ghost" style="width:100%; border:1px dashed var(--border); margin-top:10px;" @click="addGroup">+ 新建分组</button>
+            <div class="action-row">
+                <button class="btn btn-success" @click="fetchBackendPreview">🔍 预览</button>
+                <button class="btn btn-primary" @click="saveConfig" :disabled="saving">{{ saving ? '...' : '💾 保存' }}</button>
             </div>
         </div>
-
-        <div class="main-area">
-            <div :class="['toast', toastClass]">{{ toastMsg }}</div>
-
-            <div class="viewport">
-                <template v-if="config.design.layout_mode === 'list'">
-                    <div class="canvas-list" :style="{ transform: `scale(${zoom})`, transformOrigin: 'top center' }">
-                        <div class="header-area">
-                            <input class="editable text-main" v-model="config.title" placeholder="这里设置主标题..." :style="{ textAlign: getDesign().title_align }">
-                            <input class="editable text-sub" v-model="config.subtitle" placeholder="点击设置副标题..." :style="{ textAlign: getDesign().title_align }">
-                        </div>
-                        <div class="divider"></div>
-
-                        <template v-for="(group, gIdx) in config.groups" :key="gIdx">
-                            <div v-if="group.enabled !== false" class="group-container" @dragover.prevent @drop="dropOnGroupCanvas(gIdx)">
-                                <div class="group-header" :style="{ justifyContent: group.align === 'center' ? 'center' : 'flex-start' }">
-                                    <div v-if="group.align === 'left'" class="group-deco" :style="{ background: getGroupColor(gIdx) }"></div>
-                                    <input class="editable text-group" v-model="group.title" :style="{ textAlign: group.align }">
-                                </div>
-                                <div class="menu-grid" :style="{ gridTemplateColumns: `repeat(${getDesign().layout_columns}, 1fr)` }">
-                                    <template v-for="(item, iIdx) in group.menus" :key="iIdx">
-                                        <div class="menu-card" draggable="true" @dragstart="dragStartItem(gIdx, iIdx, $event)" @dragover.prevent @drop.stop="dropOnItem(gIdx, iIdx)">
-                                            <div class="card-content">
-                                                <input class="editable text-item-title" v-model="item.name" placeholder="功能名">
-                                                <input class="editable text-item-desc" v-model="item.desc" placeholder="描述...">
-                                            </div>
-                                        </div>
-                                    </template>
-                                    <div class="menu-card" style="background:transparent; border:2px dashed var(--border); opacity:0.5; justify-content:center; align-items:center; cursor:pointer;" @click="addItem(gIdx)">
-                                        <span style="font-size:24px; color:var(--text-sub)">+</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                        <div style="text-align:right; padding:30px; color:var(--text-sub); font-size:12px;">Powered by AstrBot</div>
+        <div class="sidebar-content">
+            <div class="control-group">
+                <div class="form-row">
+                    <label>画布缩放</label>
+                    <input type="range" v-model.number="zoom" min="0.5" max="1.5" step="0.1">
+                    <span style="width:30px; text-align:right">{{ Math.round(zoom*100) }}%</span>
+                </div>
+                <div class="form-row" v-if="config.design.layout_mode === 'list'">
+                    <label>卡片列数</label>
+                    <input type="range" v-model.number="getDesign().layout_columns" min="1" max="3" step="1">
+                </div>
+                <div class="form-row">
+                    <label>标题对齐</label>
+                    <div class="align-group">
+                        <button class="align-btn" :class="{active: getDesign().title_align === 'left'}" @click="getDesign().title_align = 'left'">左</button>
+                        <button class="align-btn" :class="{active: getDesign().title_align === 'center'}" @click="getDesign().title_align = 'center'">中</button>
+                        <button class="align-btn" :class="{active: getDesign().title_align === 'right'}" @click="getDesign().title_align = 'right'">右</button>
                     </div>
-                </template>
-
-                <template v-else>
-                    <div class="canvas-grid" :style="{ transform: `scale(${zoom})`, transformOrigin: 'top center', '--grid-cols': getDesign().grid_columns }">
-                        <div :style="{ textAlign: getDesign().title_align, marginBottom: '40px' }">
-                            <input class="editable text-main" v-model="config.title" :style="{ textAlign: getDesign().title_align }">
-                            <input class="editable text-sub" v-model="config.subtitle" :style="{ textAlign: getDesign().title_align }" placeholder="副标题">
-                        </div>
-
-                        <div class="widget-grid" ref="widgetGrid">
-                            <div v-for="(group, gIdx) in config.groups" :key="gIdx" 
-                                 v-show="group.enabled !== false"
-                                 :class="['group-widget', resizing && resizing.idx === gIdx ? 'resizing' : '']"
-                                 draggable="true" @dragstart="dragStartGroup(gIdx, $event)" @dragover.prevent @drop="dropOnGroupList(gIdx)"
-                                 :style="{ gridColumn: `span ${Math.min(group.span || 2, getDesign().grid_columns)}` }">
-                                
-                                <div class="resize-handle-drag" @mousedown.stop.prevent="startResize(gIdx, $event)">
-                                    <div class="resize-icon"></div>
-                                </div>
-
-                                <div class="gw-header">
-                                    <div class="gw-deco" :style="{ background: getGroupColor(gIdx) }"></div>
-                                    <input class="editable text-group" v-model="group.title" style="font-size:20px;">
-                                </div>
-
-                                <div style="display:grid; gap:10px;" :style="{ gridTemplateColumns: `repeat(${group.cols || 1}, 1fr)` }">
-                                    <div v-for="(item, iIdx) in group.menus" :key="iIdx" class="menu-pill">
-                                        <input class="editable" v-model="item.name" placeholder="功能">
-                                        <span style="cursor:pointer; color:var(--text-sub); font-size:12px;" @click="removeItem(gIdx, iIdx)">×</span>
-                                    </div>
-                                    <button class="btn-mini" style="width:100%; border:1px dashed var(--border); padding:8px; background:transparent" @click="addItem(gIdx)">+</button>
-                                </div>
-
-                                <div style="margin-top:15px; border-top:1px solid var(--border); padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
-                                    <span style="font-size:12px; color:var(--text-sub)">内部列数: {{group.cols||1}}</span>
-                                    <div style="display:flex; gap:2px;">
-                                        <button class="btn-mini" @click="group.cols = Math.max(1, (group.cols||1)-1)">-</button>
-                                        <button class="btn-mini" @click="group.cols = Math.min(3, (group.cols||1)+1)">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
+                </div>
             </div>
-        </div>
 
-        <div v-if="showPreview" class="modal-mask" @click.self="showPreview = false">
-            <div v-if="previewLoading" style="color:white; font-size:1.2rem;">渲染中...</div>
-            <img v-if="previewUrl && !previewLoading" :src="previewUrl" class="preview-image">
+            <div v-for="(group, gIdx) in config.groups" :key="gIdx" class="outline-group">
+                <div class="outline-header">
+                    <div class="deco-bar" :style="{background: getGroupColor(gIdx)}"></div>
+                    <input type="text" v-model="group.title" style="flex:1; background:transparent; border:none; font-weight:600; color:var(--text-main)" placeholder="分组名">
+                    <div class="delete-wrapper">
+                        <span class="collapse-toggle" @click="toggleCollapse(gIdx)">{{ group.__collapsed ? '▶' : '▼' }}</span>
+                        <button v-if="deleteTargetIdx !== gIdx" class="btn-icon" @click="askDelete(gIdx)">🗑️</button>
+                        <div v-else class="confirm-actions">
+                            <button class="btn-icon btn-yes" @click="removeGroup(gIdx)">✅</button>
+                            <button class="btn-icon btn-no" @click="cancelDelete()">❌</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="outline-body" :class="{collapsed: group.__collapsed}">
+                    <div v-for="(item, iIdx) in group.menus" :key="iIdx" class="outline-item">
+                        <div class="outline-item-row">
+                            <input class="outline-input" v-model="item.name" placeholder="功能名">
+                            <button class="btn-icon small" @click="removeItem(gIdx, iIdx)">×</button>
+                        </div>
+                        <input class="outline-input" v-model="item.desc" placeholder="描述...">
+                    </div>
+                    <button class="btn" style="font-size:0.8rem; width:100%; background: rgba(0,0,0,0.1); border: 1px dashed var(--border); color: var(--text-sub); height:30px; padding:0;" @click="addItem(gIdx)">+ 添加功能</button>
+                </div>
+            </div>
+            <button class="btn btn-ghost" style="width:100%; border:1px dashed var(--border); margin-top:10px;" @click="addGroup">+ 新建分组</button>
         </div>
     </div>
 
-    <script>
-        const { createApp } = Vue
-        createApp({
-            data() {
-                return {
-                    config: { title: "AstrBot", subtitle: "", groups: [], design: {} },
-                    zoom: 1.0, dragSrc: null, saving: false, toastMsg: "", toastClass: "",
-                    showPreview: false, previewLoading: false, previewUrl: null,
-                    deleteTargetIdx: -1,
-                    resizing: null 
-                }
-            },
-            mounted() { this.loadConfig(); },
-            watch: {
-                config: {
-                    handler(val) {
-                        const theme = val.design?.theme || 'dark';
-                        document.documentElement.setAttribute('data-theme', theme);
-                    }, deep: true
-                }
-            },
-            methods: {
-                getDesign() { 
-                    if (!this.config.design) this.config.design = {};
-                    if (!this.config.design.layout_mode) this.config.design.layout_mode = 'list';
-                    if (!this.config.design.layout_columns) this.config.design.layout_columns = 2;
-                    if (!this.config.design.grid_columns) this.config.design.grid_columns = 4;
-                    if (!this.config.design.theme) this.config.design.theme = 'dark';
-                    if (!this.config.design.title_align) this.config.design.title_align = 'center';
-                    return this.config.design; 
-                },
-                getGroupColor(idx) { return `hsl(${(210 + (idx * 137.5)) % 360}, 85%, 60%)`; },
-                
-                toggleTheme() { 
-                    const d = this.getDesign(); d.theme = d.theme === 'light' ? 'dark' : 'light';
-                    this.saveConfig(true); 
-                },
-                switchMode(mode) {
-                    this.config.design.layout_mode = mode;
-                    this.saveConfig(true); 
-                },
+    <div class="main-area">
+        <div :class="['toast', toastClass]">{{ toastMsg }}</div>
+        <div class="viewport">
+            <div class="canvas-list" :style="{ transform: `scale(${zoom})`, transformOrigin: 'top center' }">
+                <div class="header-area">
+                    <div class="header-block">
+                        <input class="editable text-main" v-model="config.title" placeholder="这里设置主标题..." :style="{ textAlign: getDesign().title_align }">
+                        <input class="editable text-sub" v-model="config.subtitle" placeholder="点击设置副标题..." :style="{ textAlign: getDesign().title_align }">
+                    </div>
+                </div>
+                <div class="divider"></div>
 
-                calculateCellWidth() {
-                    const containerW = 800 - 60; // 800 - padding(30+30)
-                    const cols = this.getDesign().grid_columns;
-                    const gapsTotal = (cols - 1) * 20;
-                    return (containerW - gapsTotal) / cols;
-                },
-                startResize(gIdx, e) {
-                    const group = this.config.groups[gIdx];
-                    this.resizing = {
-                        idx: gIdx,
-                        startX: e.clientX,
-                        startSpan: group.span || 2,
-                        cellUnit: this.calculateCellWidth() + 20 
-                    };
-                },
-                handleResizeMove(e) {
-                    if (!this.resizing) return;
-                    // 【关键修复】除以 zoom 系数，修复缩放后的拖拽距离偏差
-                    const dx = (e.clientX - this.resizing.startX) / this.zoom;
-                    const deltaCols = Math.round(dx / this.resizing.cellUnit);
-                    let newSpan = this.resizing.startSpan + deltaCols;
-                    const maxCols = this.getDesign().grid_columns;
-                    if (newSpan < 1) newSpan = 1;
-                    if (newSpan > maxCols) newSpan = maxCols;
-                    this.config.groups[this.resizing.idx].span = newSpan;
-                },
-                handleResizeUp() {
-                    if (this.resizing) {
-                        this.resizing = null;
-                        this.saveConfig(true); 
-                    }
-                },
+                <template v-for="(group, gIdx) in config.groups" :key="gIdx">
+                    <div v-if="group.enabled !== false"
+                         class="group-container"
+                         :class="{
+                            'drag-over': dragOverGroupIdx===gIdx,
+                            'drop-before': dragOverGroupIdx===gIdx && dragOverGroupPos==='before',
+                            'drop-after': dragOverGroupIdx===gIdx && dragOverGroupPos==='after',
+                            'dragging': draggingGroupIdx===gIdx
+                         }"
+                         @dragover.prevent="onDragOverGroup(gIdx, $event)"
+                         @dragleave="onDragLeaveGroup(gIdx)"
+                         @drop="dropOnGroupCanvas(gIdx)">
+                        <div class="group-header"
+                             draggable="true"
+                             @dragstart="dragStartGroup(gIdx)"
+                             @dragend="clearDragState"
+                             :style="{ justifyContent: group.align === 'center' ? 'center' : 'flex-start' }">
+                            <div v-if="group.align === 'left'" class="group-deco" :style="{ background: getGroupColor(gIdx) }"></div>
+                            <div class="text-group" :style="{ textAlign: group.align }">{{ group.title }}</div>
+                        </div>
 
-                async loadConfig() {
-                    try {
-                        const res = await fetch('/api/config');
-                        const data = await res.json();
-                        // 【关键修复】强制补全 grid_columns 默认值
-                        if (!data.design) data.design = {};
-                        if (!data.design.grid_columns) data.design.grid_columns = 3; // 默认3列
-                        
-                        if(data.groups) {
-                            data.groups.forEach(g => {
-                                if(!g.span) g.span = 2;
-                                if(!g.cols) g.cols = 1;
-                            });
-                        }
-                        this.config = data;
-                    } catch(e) { this.showToast("加载失败"); }
-                },
-                
-                async saveConfig(isSilent) {
-                    this.saving = true;
-                    const silent = isSilent === true;
-                    try {
-                        await fetch('/api/config', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(this.config) });
-                        if (!silent) this.showToast("保存成功 ✅");
-                    } catch(e) { 
-                        this.showToast("保存失败 ❌"); 
-                    } finally { 
-                        this.saving = false; 
-                    }
-                },
-                async fetchBackendPreview() {
-                    this.showPreview = true; this.previewLoading = true;
-                    try {
-                        const res = await fetch('/api/preview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.config) });
-                        if (!res.ok) throw new Error();
-                        this.previewUrl = URL.createObjectURL(await res.blob());
-                    } catch (e) { this.showToast("预览失败"); this.showPreview = false; } finally { this.previewLoading = false; }
-                },
-                dragStartGroup(gIdx, e) { 
-                    if (this.resizing) { e.preventDefault(); return; }
-                    this.dragSrc = { type: 'group', idx: gIdx }; 
-                },
-                dropOnGroupList(targetGIdx) {
-                    if (!this.dragSrc || this.dragSrc.type !== 'group') return;
-                    const group = this.config.groups.splice(this.dragSrc.idx, 1)[0];
-                    this.config.groups.splice(targetGIdx, 0, group);
-                    this.dragSrc = null;
-                },
-                dragStartItem(gIdx, iIdx, e) { this.dragSrc = { type: 'item', gIdx, iIdx }; },
-                dropOnItem(targetGIdx, targetIIdx) {
-                    if (!this.dragSrc || this.dragSrc.type !== 'item') return;
-                    const item = this.config.groups[this.dragSrc.gIdx].menus.splice(this.dragSrc.iIdx, 1)[0];
-                    this.config.groups[targetGIdx].menus.splice(targetIIdx, 0, item);
-                    this.dragSrc = null;
-                },
-                dropOnGroupCanvas(targetGIdx) {
-                    if (!this.dragSrc || this.dragSrc.type !== 'item') return;
-                    const item = this.config.groups[this.dragSrc.gIdx].menus.splice(this.dragSrc.iIdx, 1)[0];
-                    this.config.groups[targetGIdx].menus.push(item);
-                    this.dragSrc = null;
-                },
-                addGroup() { this.config.groups.push({ title: "新分组", enabled: true, align: "left", menus: [], span: 2, cols: 1 }); },
-                askDelete(idx) { this.deleteTargetIdx = idx; },
-                cancelDelete() { this.deleteTargetIdx = -1; },
-                removeGroup(idx) { 
-                    this.config.groups.splice(idx, 1); 
-                    this.deleteTargetIdx = -1; 
-                },
-                addItem(gIdx) { this.config.groups[gIdx].menus.push({ name: "功能", desc: "", enabled: true }); },
-                removeItem(gIdx, iIdx) { this.config.groups[gIdx].menus.splice(iIdx, 1); },
-                resizeGroup(idx, delta) {
-                    const g = this.config.groups[idx];
-                    let s = (g.span || 2) + delta;
-                    if(s < 1) s = 1; if(s > 3) s = 3; 
-                    g.span = s;
-                },
-                showToast(msg) { this.toastMsg = msg; this.toastClass = "show"; setTimeout(() => this.toastClass = "", 2000); }
+                        <div class="menu-grid" :style="{ gridTemplateColumns: `repeat(${getDesign().layout_columns}, 1fr)` }">
+                            <template v-for="(item, iIdx) in group.menus" :key="iIdx">
+                                <div class="menu-card"
+                                     draggable="true"
+                                     :class="{
+                                        'drag-over': dragOverItemKey===`\({gIdx}-\){iIdx}`,
+                                        'drop-before': dragOverItemKey===`\({gIdx}-\){iIdx}` && dragOverItemPos==='before',
+                                        'drop-after': dragOverItemKey===`\({gIdx}-\){iIdx}` && dragOverItemPos==='after',
+                                        'dragging': draggingItemKey===`\({gIdx}-\){iIdx}`
+                                     }"
+                                     @dragstart="dragStartItem(gIdx, iIdx)"
+                                     @dragover.prevent="onDragOverItem(gIdx, iIdx, $event)"
+                                     @dragleave="onDragLeaveItem(gIdx, iIdx)"
+                                     @drop.stop="dropOnItem(gIdx, iIdx)"
+                                     @dragend="clearDragState">
+                                    <div class="card-content">
+                                        <div class="text-item-title">{{ item.name || '功能' }}</div>
+                                        <div class="text-item-desc">{{ item.desc }}</div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="footer-divider"></div>
+                <div class="footer-area" :class="`align-${getDesign().title_align}`">
+                    <div class="footer-badge">Menkelo/astrbot_plugin_menu_core</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="showPreview" class="modal-mask" @click.self="showPreview=false">
+        <div v-if="previewLoading" style="color:white; font-size:1.2rem;">渲染中...</div>
+        <img v-if="previewUrl && !previewLoading" :src="previewUrl" class="preview-image">
+    </div>
+</div>
+
+<script>
+const RENDER_ONLY = window.__RENDER_ONLY__ === true;
+if (RENDER_ONLY) document.body.classList.add('render-only');
+
+const { createApp } = Vue
+createApp({
+    data() {
+        return {
+            config: { title: "AstrBot", subtitle: "", groups: [], design: {} },
+            zoom: 1.0,
+            dragSrc: null,
+            dragOverGroupIdx: null,
+            dragOverGroupPos: null,
+            dragOverItemKey: null,
+            dragOverItemPos: null,
+            draggingGroupIdx: null,
+            draggingItemKey: null,
+            saving: false,
+            showPreview: false,
+            previewLoading: false,
+            previewUrl: null,
+            toastMsg: "",
+            toastClass: "",
+            deleteTargetIdx: -1
+        }
+    },
+    mounted() { this.loadConfig(); },
+    watch: {
+        config: {
+            handler(val) {
+                const theme = val.design?.theme || 'dark';
+                document.documentElement.setAttribute('data-theme', theme);
+            }, deep: true
+        }
+    },
+    methods: {
+        getDesign() { 
+            if (!this.config.design) this.config.design = {};
+            if (!this.config.design.layout_mode) this.config.design.layout_mode = 'list';
+            if (!this.config.design.layout_columns) this.config.design.layout_columns = 2;
+            if (!this.config.design.title_align) this.config.design.title_align = 'center';
+            if (!this.config.design.theme) this.config.design.theme = 'dark';
+            return this.config.design; 
+        },
+        getGroupColor(idx) { return `hsl(${(210 + (idx * 137.5)) % 360}, 85%, 60%)`; },
+        toggleTheme() { 
+            const d = this.getDesign();
+            d.theme = d.theme === 'light' ? 'dark' : 'light';
+            this.saveConfig(true);
+        },
+        toggleCollapse(gIdx) { this.config.groups[gIdx].__collapsed = !this.config.groups[gIdx].__collapsed; },
+        showToast(msg) { this.toastMsg = msg; this.toastClass = "show"; setTimeout(() => this.toastClass = "", 2000); },
+
+        getCleanConfig() {
+            const cfg = JSON.parse(JSON.stringify(this.config));
+            if (cfg.groups) cfg.groups.forEach(g => { delete g.__collapsed; });
+            return cfg;
+        },
+
+        async loadConfig() {
+            if (window.__RENDER_DATA__) {
+                const data = window.__RENDER_DATA__;
+                if (data.groups) data.groups.forEach(g => { if (g.__collapsed === undefined) g.__collapsed = false; });
+                this.config = data; return;
             }
-        }).mount('#app')
-    </script>
+            const res = await fetch('/api/config');
+            const data = await res.json();
+            if (!data.design) data.design = {};
+            if (!data.design.layout_columns) data.design.layout_columns = 2;
+            if (!data.design.title_align) data.design.title_align = 'center';
+            if (!data.design.theme) data.design.theme = 'dark';
+            if (data.groups) data.groups.forEach(g => { if (g.__collapsed === undefined) g.__collapsed = false; });
+            this.config = data;
+        },
+
+        async saveConfig(isSilent) {
+            this.saving = true;
+            const silent = isSilent === true;
+            try {
+                await fetch('/api/config', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(this.getCleanConfig()) });
+                if (!silent) this.showToast("保存成功 ✅");
+            } catch(e) { this.showToast("保存失败 ❌"); }
+            finally { this.saving = false; }
+        },
+
+        async fetchBackendPreview() {
+            this.showPreview = true; this.previewLoading = true;
+            try {
+                const res = await fetch('/api/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.getCleanConfig()),
+                    cache: 'no-store'
+                });
+                if (!res.ok) throw new Error();
+                this.previewUrl = URL.createObjectURL(await res.blob());
+            } catch(e) { this.showToast("预览失败"); this.showPreview = false; }
+            finally { this.previewLoading = false; }
+        },
+
+        dragStartGroup(gIdx) { this.dragSrc = { type:'group', gIdx }; this.draggingGroupIdx = gIdx; },
+        dragStartItem(gIdx,iIdx){ this.dragSrc={type:'item', gIdx, iIdx}; this.draggingItemKey = `\({gIdx}-\){iIdx}`; },
+
+        onDragOverGroup(gIdx, e){
+            const rect = e.currentTarget.getBoundingClientRect();
+            this.dragOverGroupPos = (e.clientY - rect.top) < rect.height/2 ? 'before' : 'after';
+            this.dragOverGroupIdx = gIdx;
+        },
+        onDragLeaveGroup(){ this.dragOverGroupIdx=null; this.dragOverGroupPos=null; },
+
+        onDragOverItem(gIdx,iIdx,e){
+            e.stopPropagation();
+            const rect = e.currentTarget.getBoundingClientRect();
+            this.dragOverItemPos = (e.clientY - rect.top) < rect.height/2 ? 'before' : 'after';
+            this.dragOverItemKey = `\({gIdx}-\){iIdx}`;
+        },
+        onDragLeaveItem(){ this.dragOverItemKey=null; this.dragOverItemPos=null; },
+
+        dropOnGroupCanvas(gIdx){
+            if (!this.dragSrc) return;
+            if (this.dragSrc.type === 'group') {
+                let target = gIdx + (this.dragOverGroupPos==='after'?1:0);
+                const src = this.dragSrc.gIdx;
+                const group = this.config.groups.splice(src,1)[0];
+                if (src < target) target -= 1;
+                this.config.groups.splice(target,0,group);
+            } else if (this.dragSrc.type === 'item') {
+                const item = this.config.groups[this.dragSrc.gIdx].menus.splice(this.dragSrc.iIdx,1)[0];
+                this.config.groups[gIdx].menus.push(item);
+            }
+            this.clearDragState();
+        },
+
+        dropOnItem(gIdx,iIdx){
+            if (!this.dragSrc || this.dragSrc.type!=='item') return;
+            let target = iIdx + (this.dragOverItemPos==='after'?1:0);
+            const srcG = this.dragSrc.gIdx;
+            const srcI = this.dragSrc.iIdx;
+            const item = this.config.groups[srcG].menus.splice(srcI,1)[0];
+            if (srcG===gIdx && srcI < target) target -=1;
+            this.config.groups[gIdx].menus.splice(target,0,item);
+            this.clearDragState();
+        },
+
+        clearDragState(){
+            this.dragSrc=null;
+            this.dragOverGroupIdx=null;
+            this.dragOverGroupPos=null;
+            this.dragOverItemKey=null;
+            this.dragOverItemPos=null;
+            this.draggingGroupIdx=null;
+            this.draggingItemKey=null;
+        },
+
+        addGroup(){ this.config.groups.push({ title:"新分组", menus:[], enabled:true, align:"left", __collapsed:false }); },
+        addItem(gIdx){ this.config.groups[gIdx].menus.push({ name:"功能", desc:"" }); },
+        removeItem(gIdx,iIdx){ this.config.groups[gIdx].menus.splice(iIdx,1); },
+
+        askDelete(idx){ this.deleteTargetIdx = idx; },
+        cancelDelete(){ this.deleteTargetIdx = -1; },
+        removeGroup(idx){ this.config.groups.splice(idx,1); this.deleteTargetIdx = -1; }
+    }
+}).mount('#app')
+</script>
 </body>
 </html>
