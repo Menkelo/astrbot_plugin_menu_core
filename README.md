@@ -23,16 +23,6 @@
 
 ---
 
-## 项目信息
-
-- 插件名：`astrbot_plugin_menu_core`
-- 显示名：菜单(Core)
-- 作者：Menkelo
-- 当前版本：`1.1.0`
-- 仓库地址：<https://github.com/Menkelo/astrbot_plugin_menu_core>
-
----
-
 ## 运行依赖
 
 请确保你的环境已安装：
